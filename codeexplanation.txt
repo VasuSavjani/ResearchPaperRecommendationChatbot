@@ -1,0 +1,77 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sentence_transformers import SentenceTransformer
+from numpy.linalg import norm
+
+-> This code imports several Python libraries that will be used in the chatbot.
+
+------------------------------------------------------------------------------------------------
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+-> creates an instance of the SentenceTransformer class
+which is a pre-trained model for generating sentence embeddings. 
+The 'all-MiniLM-L6-v2' argument specifies the name of the pre-trained model to use.
+
+------------------------------------------------------------------------------------------------
+
+dataset = pd.read_csv('/content/convertcsv.csv')
+
+-> loads the dataset containing research paper abstracts from a CSV file named 'convertcsv.csv' using the pandas library.
+
+------------------------------------------------------------------------------------------------
+
+paper_abstracts = dataset['abstract'].values.tolist()
+
+-> extracts the abstracts of the research papers from the dataset and converts them into a list of strings.
+
+------------------------------------------------------------------------------------------------
+
+encoded_abstracts = model.encode(paper_abstracts)
+
+-> uses the pre-trained model to generate embeddings for each of the research paper abstracts. 
+The embeddings are numerical vectors that represent the meaning of each abstract in a high-dimensional space.
+
+------------------------------------------------------------------------------------------------
+
+def recommend_paper(query):
+    encoded_query = model.encode(query)
+    similarities = np.dot(encoded_abstracts, encoded_query) / (norm(encoded_abstracts) * norm(encoded_query))
+    most_similar_paper_index = np.argmax(similarities)
+    paper_title = dataset['title'].iloc[most_similar_paper_index]
+    paper_submitter = dataset['submitter'].iloc[most_similar_paper_index]
+    paper_authors = dataset['authors'].iloc[most_similar_paper_index]
+    return f"\nTitle: {paper_title}\nSubmitter: {paper_submitter}\nAuthors: {paper_authors}\n\n"
+
+-> defines a function named 'recommend_paper' that takes a query string as input, generates an embedding for the query using the pre-trained model, computes the cosine similarity between the query and each research paper abstract, and returns the title, submitter, and authors of the paper with the highest similarity score.
+
+------------------------------------------------------------------------------------------------
+
+def respond_to_input(input_text):
+    input_text = input_text.lower()
+
+    if "recommend" in input_text:
+        query = input_text.split("recommend ")[1]
+        return "\nI recommend the following paper:\n" + recommend_paper(query)
+    else:
+        return "I'm sorry, I didn't understand what you said.\n\n"
+
+-> defines a function named 'respond_to_input' that takes a user input string as input, converts it to lowercase, checks if it contains the word "recommend", extracts the query from the input string, and returns either a recommended paper or an error message based on the user input.
+
+------------------------------------------------------------------------------------------------
+
+def run_chatbot():
+    print("Hello! I'm a research paper recommendation chatbot. How can I help you? (Note: Use recommend before search)")
+    while True:
+        user_input = input(">")
+        response = respond_to_input(user_input)
+        print(response)
+
+-> defines a function named 'run_chatbot' that prints a welcome message, waits for user input, passes the user input to the 'respond_to_input' function, and prints the response. This function runs continuously until the user exits the chatbot.
+
+------------------------------------------------------------------------------------------------
+
+run_chatbot()
+
+-> calls the 'run_chatbot' function to start the chatbot.
