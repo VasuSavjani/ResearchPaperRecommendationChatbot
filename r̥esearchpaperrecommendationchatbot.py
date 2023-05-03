@@ -11,7 +11,6 @@ Original file is located at
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from sentence_transformers import SentenceTransformer
 from numpy.linalg import norm
 
